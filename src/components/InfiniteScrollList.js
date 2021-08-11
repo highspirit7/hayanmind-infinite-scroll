@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 
+import throttle from '../utils/throttle';
 import CardSkeleton from './CardSkeleton';
 import Loader from './Loader';
+
+const THROTTLE_WAIT = 300;
 
 const InfiniteScrollList = () => {
   const [comments, setComments] = useState();
@@ -29,22 +32,9 @@ const InfiniteScrollList = () => {
     }
   };
 
-  const [waiting, setWaiting] = useState(true);
-  const handleScrollThrottle = () => {
-    if (waiting) {
-      handleScroll(); // 처음엔 무조건 실행
-      setWaiting(false); // false로 바꿔 실행되지 않도록 한다.
-      setTimeout(() => {
-        // 2000ms 만큼 시간이 지난 후,
-        setWaiting(true); // true로 바뀌면서 다시 실행됨.
-      }, 2000);
-    }
-  };
-  useEffect(() => {
-    window.addEventListener('scroll', handleScrollThrottle);
-
-    return () => window.removeEventListener('scroll', handleScrollThrottle);
-  }, []);
+  const handleScrollThrottle = throttle(() => {
+    handleScroll();
+  }, THROTTLE_WAIT);
 
   const fetchMorePages = () => {
     setTimeout(async () => {
@@ -56,6 +46,12 @@ const InfiniteScrollList = () => {
       } else setIsReachingEnd(true);
     }, 500);
   };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScrollThrottle);
+
+    return () => window.removeEventListener('scroll', handleScrollThrottle);
+  }, []);
 
   useEffect(() => {
     if (!isFetching || isReachingEnd) return;
