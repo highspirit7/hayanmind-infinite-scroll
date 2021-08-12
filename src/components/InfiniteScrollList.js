@@ -43,7 +43,6 @@ const InfiniteScrollList = () => {
     const intersectionObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          console.log('isIntersecting tru');
           setIsFetching(true);
         }
       });
