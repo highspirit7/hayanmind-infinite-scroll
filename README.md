@@ -30,6 +30,7 @@ $ npm start
 fork 한 후에 개인적으로 쓰로틀링 로직과 무한 스크롤 로직을 각각 브랜치 따서 리팩토링하였습니다.
 원래 스크롤 이벤트로 구현하였으나 refactor/intersection_observer 브랜치에는 intersection observer api를 활용해서 수정해보았습니다.
 [리팩토링 내역 정리 문서](https://roan-cuckoo-cc6.notion.site/3-0c2693ec8f3148af8a507c74392b4596)
+> 배포한 링크 및 master 브랜치에는 이러한 리팩토링 사항이 반영되어 있지 않습니다!!
 
 ## 👥 Contributors
 👩‍💻 [jiyoon1156](https://github.com/jiyoon1156)
