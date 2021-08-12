@@ -1,13 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 
 import CardSkeleton from './CardSkeleton';
 import Loader from './Loader';
 
+const options = {
+  threshold: '0.1',
+};
+
 const InfiniteScrollList = () => {
   const [comments, setComments] = useState();
   const [page, setPage] = useState(2);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isReachingEnd, setIsReachingEnd] = useState(false);
+
+  const lastCommentRef = useRef();
+
+  const fetchMorePages = () => {
+    setTimeout(async () => {
+      const { data } = await axios.get(`https://jsonplaceholder.typicode.com/comments?_page=${page}&_limit=10`);
+
+      if (data.length > 0) {
+        setComments(comments.concat(data));
+      } else {
+        setIsReachingEnd(true);
+      }
+
+      setIsFetching(false);
+    }, 200);
+  };
 
   useEffect(() => {
     const apiCall = async () => {
@@ -17,45 +39,24 @@ const InfiniteScrollList = () => {
     apiCall();
   }, []);
 
-  const [isFetching, setIsFetching] = useState(false);
-  const [isReachingEnd, setIsReachingEnd] = useState(false);
-
-  const handleScroll = () => {
-    const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-    const scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
-    const { clientHeight } = document.documentElement;
-    if (clientHeight + scrollTop >= scrollHeight / 2) {
-      setIsFetching(true);
-    }
-  };
-
-  const [waiting, setWaiting] = useState(true);
-  const handleScrollThrottle = () => {
-    if (waiting) {
-      handleScroll(); // 처음엔 무조건 실행
-      setWaiting(false); // false로 바꿔 실행되지 않도록 한다.
-      setTimeout(() => {
-        // 2000ms 만큼 시간이 지난 후,
-        setWaiting(true); // true로 바뀌면서 다시 실행됨.
-      }, 2000);
-    }
-  };
   useEffect(() => {
-    window.addEventListener('scroll', handleScrollThrottle);
+    const intersectionObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          console.log('isIntersecting tru');
+          setIsFetching(true);
+        }
+      });
+    }, options);
 
-    return () => window.removeEventListener('scroll', handleScrollThrottle);
-  }, []);
+    if (lastCommentRef?.current) {
+      intersectionObserver.observe(lastCommentRef.current);
+    }
 
-  const fetchMorePages = () => {
-    setTimeout(async () => {
-      const { data } = await axios.get(`https://jsonplaceholder.typicode.com/comments?_page=${page}&_limit=10`);
-
-      if (data.length > 0) {
-        setComments(comments.concat(data));
-        setIsFetching(false);
-      } else setIsReachingEnd(true);
-    }, 500);
-  };
+    return () => {
+      intersectionObserver?.disconnect(lastCommentRef.current);
+    };
+  }, [comments?.length]);
 
   useEffect(() => {
     if (!isFetching || isReachingEnd) return;
@@ -67,21 +68,37 @@ const InfiniteScrollList = () => {
 
   return (
     <Wrapper>
-      {comments.map((comment) => (
-        <StyledCard key={comment.id}>
-          <div>
-            <b>Comment Id</b>&nbsp;&nbsp;{comment.id}
-          </div>
-          <StyledEmail>
-            <b>Email</b>&nbsp;&nbsp;{comment.email}
-          </StyledEmail>
-          <div>
-            <b>Comment</b>
-            <br />
-            <p>{comment.body}</p>
-          </div>
-        </StyledCard>
-      ))}
+      {comments.map((comment, i) =>
+        i === comments.length - 1 ? (
+          <StyledCard key={comment.id} ref={lastCommentRef}>
+            <div>
+              <b>Comment Id</b>&nbsp;&nbsp;{comment.id}
+            </div>
+            <StyledEmail>
+              <b>Email</b>&nbsp;&nbsp;{comment.email}
+            </StyledEmail>
+            <div>
+              <b>Comment</b>
+              <br />
+              <p>{comment.body}</p>
+            </div>
+          </StyledCard>
+        ) : (
+          <StyledCard key={comment.id}>
+            <div>
+              <b>Comment Id</b>&nbsp;&nbsp;{comment.id}
+            </div>
+            <StyledEmail>
+              <b>Email</b>&nbsp;&nbsp;{comment.email}
+            </StyledEmail>
+            <div>
+              <b>Comment</b>
+              <br />
+              <p>{comment.body}</p>
+            </div>
+          </StyledCard>
+        ),
+      )}
 
       {isFetching &&
         !isReachingEnd &&
