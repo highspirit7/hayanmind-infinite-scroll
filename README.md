@@ -20,10 +20,17 @@ $ npm start
 - Linter: Eslint & Prettier
 
 ## 📚 구현사항
-- 무한 스크롤링
-- Throttle
-- Skeleton
+- 무한 스크롤링(scroll event, intersection observer api)
+- Throttling
+- Skeleton 컴포넌트
 - Loading 컴포넌트
+
+## ‼️참고사항‼️
+파트너와 함께 작업한 결과물을 fork한 저장소이며, 
+fork 한 후에 개인적으로 쓰로틀링 로직과 무한 스크롤 로직을 각각 브랜치 따서 리팩토링하였습니다.
+원래 스크롤 이벤트로 구현하였으나 refactor/intersection_observer 브랜치에는 intersection observer api를 활용해서 수정해보았습니다.
+[리팩토링 내역 정리 문서](https://roan-cuckoo-cc6.notion.site/3-0c2693ec8f3148af8a507c74392b4596)
+
 ## 👥 Contributors
 👩‍💻 [jiyoon1156](https://github.com/jiyoon1156)
 
